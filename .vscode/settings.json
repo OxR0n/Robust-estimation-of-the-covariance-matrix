@@ -1,5 +1,5 @@
 {
   "code-runner.executorMap": {
-    "python": "\"$dir/.venv/bin/python\" -u"
+    "python": "$dir/.venv/bin/python -u"
   }
 }
