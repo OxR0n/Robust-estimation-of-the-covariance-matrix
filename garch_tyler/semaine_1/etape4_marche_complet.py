@@ -1,18 +1,21 @@
-import numpy as np 
+import numpy as np
 
-GRAINE = 161 
-N = 20  
-VOL_MARCHE = 0.01 
-ALPHA = 0.15 
-BETA = 0.80  
-OMEGA = 1 - ALPHA - BETA 
+GRAINE = 161
+N = 20
+VOL_MARCHE = 0.01
+
+
+
+ALPHA = 0.15
+BETA = 0.80
+OMEGA = 1 - ALPHA - BETA
 
 
 def creer_actions(n, graine=GRAINE):
     """Invente n actions : leur sensibilite au marche et leur risque propre."""
     rng = np.random.default_rng(graine)
-    b = rng.uniform(0.5, 1.5, size=n)  
-    propre = rng.uniform(0.01, 0.02, size=n)  
+    b = rng.uniform(0.5, 1.5, size=n)
+    propre = rng.uniform(0.01, 0.02, size=n)
     return b, propre
 
 
@@ -27,6 +30,7 @@ def simuler_marche(nb_jours, b, propre, rng, jours_jetes=500):
     choc_marche = rng.standard_normal(total)
     chocs_propres = rng.standard_normal((total, len(b)))
 
+    # ici on calcule la nervosite h du marche, qui va influencer tous les rendements
     h = np.empty(total)
     h[0] = 1.0
     for t in range(1, total):
@@ -38,7 +42,8 @@ def simuler_marche(nb_jours, b, propre, rng, jours_jetes=500):
     part_propre = chocs_propres * propre
 
     # La nervosite touche tout
-    rendements = np.sqrt(h)[:, None] * (part_marche + part_propre)  
+    # h agit sur la variance. Les rendements, eux, sont à l’échelle de l’écart-type, qui est la racine de la variance.
+    rendements = np.sqrt(h)[:, None] * (part_marche + part_propre)
 
     # On jette les premiers jours, ou la nervosite partait d'une valeur arbitraire
     return rendements[jours_jetes:], h[jours_jetes:]
@@ -49,7 +54,7 @@ if __name__ == "__main__":
     sigma = vraie_sigma(b, propre)
     vols = np.sqrt(np.diag(sigma))
     correlations = sigma / np.outer(vols, vols)
-    paires = correlations[np.triu_indices(N, k=1)] 
+    paires = correlations[np.triu_indices(N, k=1)]
 
     print("--- Le corrige Sigma ---")
     print("Taille :", sigma.shape)
@@ -61,21 +66,27 @@ if __name__ == "__main__":
     print("\n--- Les donnees simulees ---")
     print("Taille du tableau de rendements :", rendements.shape)
 
-    print("\n5 premiers jours, 4 premieres actions :")
+    print("\n10 premiers jours, 4 premieres actions :")
     print("  Jour  Nervosite   Action 1  Action 2  Action 3  Action 4")
-    for t in range(5):
+    for t in range(100):
         valeurs = "  ".join(f"{r:+7.2%}" for r in rendements[t, :4])
         print(f"  {t + 1:4d}    {h[t]:.2f}      {valeurs}")
 
     # Comparer les jours nerveux et les jours calmes
 
-    # Jours ou la nervosite depasse 1,5
-    nerveux = h > 1.5 
+    # Les seuils ne sont pas choisis a la main : on les calcule a partir des donnees
+    # np.quantile(h, 0.8) = la nervosite que seuls 20 % des jours depassent
+    # np.quantile(h, 0.2) = la nervosite sous laquelle se trouvent 20 % des jours
+    seuil_nerveux = np.quantile(h, 0.8)
+    seuil_calme = np.quantile(h, 0.2)
 
-    # Jours ou la nervosite est sous 0,7 
-    calmes = h < 0.7  
+    # Jours ou la nervosite depasse le seuil : les 20 % de jours les plus nerveux
+    nerveux = h > seuil_nerveux
 
-    print(f"\nJours nerveux (h > 1,5) : {nerveux.sum()} jours")
+    # Jours ou la nervosite est sous le seuil : les 20 % de jours les plus calmes
+    calmes = h < seuil_calme
+
+    print(f"\nJours nerveux (20 % les plus nerveux, h > {seuil_nerveux:.2f}) : {nerveux.sum()} jours")
     print(f"  Mouvements de plus de 3 % : {np.mean(np.abs(rendements[nerveux]) > 0.03):.0%}")
-    print(f"Jours calmes (h < 0,7) : {calmes.sum()} jours")
+    print(f"Jours calmes (20 % les plus calmes, h < {seuil_calme:.2f}) : {calmes.sum()} jours")
     print(f"  Mouvements de plus de 3 % : {np.mean(np.abs(rendements[calmes]) > 0.03):.0%}")

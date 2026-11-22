@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use("Agg")  
 import matplotlib.pyplot as plt  
 
-# Permet d'importer les fichiers du dossier voisin semaine_1
+# Permet d'importer les fichiers du dossier voisin semaine 1
 sys.path.append(str(Path(__file__).resolve().parent.parent / "semaine_1"))
 import etape4_marche_complet as marche
 from etape4_marche_complet import GRAINE, N, creer_actions, simuler_marche, vraie_sigma

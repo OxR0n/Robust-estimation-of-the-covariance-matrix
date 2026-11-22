@@ -19,7 +19,7 @@ def erreurs_relatives(sigma_chapeau, sigma):
 
 
 if __name__ == "__main__":
-    # --- Partie 1 : le petit exemple calcule a la main ---
+    # Partie 1 : le petit exemple calcule a la main
     # Le corrige
     sigma_exemple = np.array([[3.0, 0.0], [0.0, 2.0]])  
     # La copie
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     f, s = erreurs_relatives(chapeau_exemple, sigma_exemple)
     print(f"Erreurs relatives : Frobenius {f:.0%}, spectrale {s:.0%}")
 
-    # --- Partie 2 : les 3 echantillons de l'etape 1 (marche gaussien) ---
+    # Partie 2 : les 3 echantillons de l'etape 1 (marche gaussien)
     # Nervosite fixe a 1
     marche.ALPHA, marche.BETA, marche.OMEGA = 0.0, 0.0, 1.0  
     b, propre = creer_actions(N)

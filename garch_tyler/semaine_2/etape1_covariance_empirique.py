@@ -9,7 +9,7 @@ import etape4_marche_complet as marche
 from etape4_marche_complet import GRAINE, N, creer_actions, simuler_marche, vraie_sigma
 
 
-# --- Partie 1 : le petit exemple calcule a la main ---
+# Partie 1 : le petit exemple calcule a la main ---
 exemple = np.array([[2.0, 1.0],   # Jour 1 : action A, action B (en %)
                     [-1.0, 0.0],  # Jour 2
                     [0.0, -1.0],  # Jour 3
@@ -17,7 +17,7 @@ exemple = np.array([[2.0, 1.0],   # Jour 1 : action A, action B (en %)
 print("=== Petit exemple : 2 actions, 4 jours ===")
 print(np.cov(exemple, rowvar=False))  
 
-# --- Partie 2 : le marche de la semaine 1, en version calme (sans nervosite) ---
+# Partie 2 : le marche de la semaine 1, en version calme (sans nervosite) ---
 # Nervosite fixe a 1 : marche gaussien
 marche.ALPHA, marche.BETA, marche.OMEGA = 0.0, 0.0, 1.0  
 
