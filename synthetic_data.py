@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.stats import t, norm
 
 
 def random_correlation(n, rng=None):
@@ -73,67 +71,17 @@ def generate_synthetic_data(n, N, nu=5, sigma=None, corr=None,
     return df, C, corr, sigma
 
 
-def compare_matrices(A, B, title, cmap, vmin=None, vmax=None):
-    if vmin is None:
-        vmin = min(A.min(), B.min())
-    if vmax is None:
-        vmax = max(A.max(), B.max())
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5), layout='constrained')
-    im = axes[0].imshow(A, cmap=cmap, vmin=vmin, vmax=vmax)
-    axes[0].set_title('Theoretical ' + title)
-    axes[1].imshow(B, cmap=cmap, vmin=vmin, vmax=vmax)
-    axes[1].set_title('Empirical ' + title)
-    fig.colorbar(im, ax=axes)
-    plt.show()
-
 
 if __name__ == '__main__':
-    # Simulation parameters (None generates random volatilities/correlations)
-    n = 10
-    N = 1000
-    nu = 5
-    sigma = None
-    corr = None
-    mu = None
-
-    # Example for n=3: corr = [0.6, 0.3, 0.4]
     df, C, corr, sigma = generate_synthetic_data(
-        n, N, nu, sigma, corr, mu, seed=42
+        n=3, N=100000, nu=5, seed=42
     )
-
-    C_empirical = df.cov().values
-    corr_empirical = df.corr().values
-    error = np.linalg.norm(C_empirical - C, ord='fro')
-    relative_error = error / np.linalg.norm(C, ord='fro')
-
-    print('Volatilities:', sigma)
-    print('\nTheoretical correlation matrix:\n', corr)
-    print('\nTheoretical covariance matrix:\n', C)
-    print('\nEmpirical covariance matrix:\n', C_empirical)
-    print('\nAbsolute error:', error)
-    print('Relative error:', relative_error)
-    print('\nSynthetic data:\n', df.head())
-
-    compare_matrices(corr, corr_empirical, 'correlation matrix', 'coolwarm', -1, 1)
-    compare_matrices(C, C_empirical, 'covariance matrix', 'viridis')
-
-    plt.figure(figsize=(12, 4))
-    plt.plot(df['Asset_1'], linewidth=0.8)
-    plt.title('Synthetic Asset Returns')
-    plt.xlabel('Observation')
-    plt.ylabel('Return')
-    plt.show()
-
-    x = np.linspace(-7, 7, 2000)
-    s = np.sqrt((nu - 2) / nu)
-    for log_scale in (False, True):
-        plt.figure(figsize=(10, 5))
-        plt.plot(x, norm.pdf(x), label='Normal distribution')
-        plt.plot(x, t.pdf(x, df=nu, scale=s), label=f'Student (nu={nu})')
-        if log_scale:
-            plt.yscale('log')
-        plt.title('Normal vs Student Distribution')
-        plt.xlabel('Standardised returns')
-        plt.ylabel('Density' if not log_scale else 'Density (log scale)')
-        plt.legend()
-        plt.show()
+    print(df.head())
+    print("\nTheoretical covariance matrix:")
+    print(C)
+    print("\nSample covariance (sanity check):")
+    print(df.cov().values)
+    assert df.shape == (100000, 3)
+    assert np.all(np.isfinite(df.values))
+    assert np.linalg.norm(df.cov().values - C) / np.linalg.norm(C) < 0.1
+    print("\nSimulation check passed.")
